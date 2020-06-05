@@ -1,6 +1,10 @@
+//PUERTO
 require('./config/config');
 
 const express = require('express');
+const mongoose = require('mongoose');
+
+
 const app = express();
 const bodyParser = require('body-parser')
 
@@ -12,42 +16,26 @@ app.use(bodyParser.urlencoded({ extended: false }))
 app.use = midelware
 */
 app.use(bodyParser.json())
+
+app.use(require('./routes/usuario'));
  
-//app.get('/',  (req, res) => res.json('Hello World'));
-app.get('/usuario',(req, res) => {
-    res.json('Obtener usuario')
-}); 
-
-app.post('/usuario',(req, res) => {
-    let body = req.body;
-
-        if(body.nombre === undefined){
-            res.status(400).json({
-                ok : false, 
-                mensaje: 'el nombre es necesario'
-            });
-
-        }else{
-            res.json({
-                persona : body
-            });
-            
-        }
-    }); 
+//coneccion a la base de datos
+mongoose.set('useCreateIndex', true);
+mongoose.connect(process.env.URLDB,
+  {
+    useNewUrlParser: true,
+    useUnifiedTopology: true
+   },
+console.log('BASE DE DATOS ONLINE'));
 
 
-app.put('/usuario/:id',(req, res) => {
-
-    let id = req.params.id;
-
-    res.json({
-        id
-    });
-}); 
 
 
-app.delete('/usuario',(req, res) => {
-    res.json('delete Obtener usuario')
-}); 
+
 
   app.listen(process.env.PORT , () => console.log('Escuchando el puerto' , process.env.PORT));
+
+
+  // usuario : jherrrera
+  //contraseña : B2l3xVKynMA1Hwzt contraseña mongodb atlas autogenerada
+  //URL mongodb atlas en la nube = mongodb+srv://jherrera:B2l3xVKynMA1Hwzt@cluster0-wyroy.mongodb.net/cafe
