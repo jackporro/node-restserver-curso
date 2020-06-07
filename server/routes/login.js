@@ -12,7 +12,7 @@ app.post('/login' ,(req, res) => {
     let body =  req.body;
     
     //findOne = trae solo uno , quiero que el email de la base de datos sea igual al body.email que le estoy enviando
-    //primer parameto valido que el email de la base de datos sea igual al email que estoy enviando
+    //primer paramero valido que el email de la base de datos sea igual al email que estoy enviando
     //segundo parametro callback , recibo el error o el usuarioDB(usuario que viene de la base de datos.)
     Usuario.findOne({email : body.email}, (err , usuarioDB) =>{
 
