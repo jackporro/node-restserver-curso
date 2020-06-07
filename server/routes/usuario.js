@@ -1,12 +1,15 @@
 const express = require('express');
 const Usuario = require('../models/usuario');
+//destructuracion
+const { verificaToken, verificaAdmin_Role} = require('../middlewares/autenticacion')
+
 const app = express();
 const bcrypt = require('bcrypt');
 const  _ = require('underscore');
 
 //app.get('/',  (req, res) => res.json('Hello World'));
-app.get('/usuario',(req, res) => {
-    
+app.get('/usuario', verificaToken, (req, res) => {
+
     //parametros opcionales caen en req.query
     let desde = req.query.desde || 0 ;
     desde= Number(desde);
@@ -15,9 +18,11 @@ app.get('/usuario',(req, res) => {
     limite =Number(limite);
 
     //aca le digo que campos quiero que aparezcan
-    Usuario.find({estado :true} , 'nombre email rol estado google img')
-  //  .skip(desde) //Se salta los primeros registros que le mandemos como parametro ej : 5 muestra del 6 en adelante.
-   // .limit(limite) //limite de registros quq quiero mostrar en la lista
+    //me lista solo los con estado true
+    //Usuario.find({estado :true} , 'nombre email rol estado google img ')
+     Usuario.find()
+    .skip(desde) //Se salta los primeros registros que le mandemos como parametro ej : 5 muestra del 6 en adelante.
+    .limit(limite) //limite de registros quq quiero mostrar en la lista
     .exec((err , usuarios) => {
 
         if( err ) {
@@ -28,7 +33,8 @@ app.get('/usuario',(req, res) => {
         }
 
         //count , devuelve la cantidad de registors que tengo en mi coleccion.
-        Usuario.count({estado : true/*quiero traer solo los con estado false */},(err, conteo) => {
+        //quiero traer solo los con estado true 
+        Usuario.count((err, conteo) => {
             res.json({
                 ok : true,
                 usuarios, 
@@ -43,7 +49,7 @@ app.get('/usuario',(req, res) => {
     })
 }); 
 
-app.post('/usuario',(req, res) => {
+app.post('/usuario',[verificaToken ,verificaAdmin_Role],(req, res) => {
     let body = req.body;
 
     // creamos la instancia de Usuario.
@@ -72,7 +78,7 @@ app.post('/usuario',(req, res) => {
 }); 
 
 
-app.put('/usuario/:id',(req, res) => {
+app.put('/usuario/:id',[verificaToken , verificaAdmin_Role], (req, res) => {
 
     let id = req.params.id;
     //con el pick de la libreria underscore podemos decir ke datos kiero actualizar y se los mando en un array
@@ -98,14 +104,16 @@ app.put('/usuario/:id',(req, res) => {
 }); 
 
 
-app.delete('/usuario/:id',(req, res) => {
+app.delete('/usuario/:id',[verificaToken , verificaAdmin_Role], (req, res) => {
 
     let id = req.params.id ;
     
     //Borramos usuario de forma logica, cambiamos el estado
-    let body = _.pick(req.body , ['estado']);
-    body.estado = false;
-    Usuario.findByIdAndUpdate(id,body,{ new :true } , (err , usuarioBorradoLogico) =>{
+    
+    let cambiaEstado = {
+        estado: false
+    };
+    Usuario.findByIdAndUpdate(id,cambiaEstado,{ new :true } , (err , usuarioBorradoLogico) =>{
 
         if( err ) {
             res.status(400).json({
@@ -113,7 +121,7 @@ app.delete('/usuario/:id',(req, res) => {
                 err
             });
         }
-        if(usuarioBorradoLogico.estado === false){
+        if(!usuarioBorradoLogico){
             res.status(400).json({
                 ok: false,
                 err : {
@@ -131,29 +139,32 @@ app.delete('/usuario/:id',(req, res) => {
 
 
     //Borramos de forma fisica el usuario de la base de datos
-   /*Usuario.findByIdAndRemove(id,(err , usuarioBorrado) => {
-        if( err ) {
-            res.status(400).json({
-                ok: false,
-                err
-            });
-        }
-        if(!usuarioBorrado){
-            res.status(400).json({
-                ok: false,
-                err : {
-                    message :'Usuario no encontrado'
-                }
-            });
-        }
+    
+    /*
+        Usuario.findByIdAndRemove(id,(err , usuarioBorrado) => {
+            if( err ) {
+                res.status(400).json({
+                    ok: false,
+                    err
+                });
+            }
+            if(!usuarioBorrado){
+                res.status(400).json({
+                    ok: false,
+                    err : {
+                        message :'Usuario no encontrado'
+                    }
+                });
+            }
 
-        res.json({
-            ok :true ,
-            usuario : usuarioBorrado,
-            mensaje : `se borro el usuario ${usuarioBorrado}`
-        });
+            res.json({
+                ok :true ,
+                usuario : usuarioBorrado,
+                mensaje : `se borro el usuario ${usuarioBorrado}`
+            });
 
-    }); */
+        }); 
+    */
     
 }); 
 

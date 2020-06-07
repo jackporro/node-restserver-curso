@@ -52,6 +52,9 @@ usuarioSchema.methods.toJSON = function(){
     return userObject;
 }
 
+
+
+   
 //uniqueValidator plugin para validaciones y mostrar mensajes personalizados.
 usuarioSchema.plugin(uniqueValidator, { message :'{PATH} Debe de ser unico'} )
 
